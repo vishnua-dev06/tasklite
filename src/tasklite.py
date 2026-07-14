@@ -51,15 +51,17 @@ def list_tasks():
         print(f"[{status}] {i + 1}. {task['description']}")
 
 
-def mark_done(index):
-    """Mark a task as completed."""
+def remove_task(index):
+    """Remove a task."""
     tasks = load_tasks()
-    try:
-        tasks[index]["done"] = True
-        save_tasks(tasks)
-        print(f"Marked task {index} as done.")
-    except IndexError:
+
+    if index < 1 or index > len(tasks):
         print("No such task.")
+        return
+
+    removed = tasks.pop(index - 1)
+    save_tasks(tasks)
+    print(f"Removed: {removed['description']}")
 
 
 def remove_task(index):
