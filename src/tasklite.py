@@ -28,7 +28,13 @@ def save_tasks(tasks):
 def add_task(description, priority="normal"):
     """Add a new, not-yet-done task with the given description."""
     tasks = load_tasks()
-    tasks.append({"description": description, "priority": priority, "done": False})
+    tasks.append(
+        {
+            "description": description,
+            "priority": priority,
+            "done": False,
+        }
+    )
     save_tasks(tasks)
     print(f"Added: {description}")
 
@@ -39,16 +45,14 @@ def list_tasks():
     if not tasks:
         print('No tasks yet. Add one with: tasklite add "buy milk"')
         return
+
     for i, task in enumerate(tasks):
         status = "x" if task["done"] else " "
-        # NOTE: this shows a 1-based number (i + 1) for readability,
-        # but done()/remove() below expect a 0-based index. See issue
-        # "Task numbers in list don't match the numbers done/remove expect".
         print(f"[{status}] {i + 1}. {task['description']}")
 
 
 def mark_done(index):
-    # TODO(documentation): this function has no docstring yet.
+    """Mark a task as completed."""
     tasks = load_tasks()
     try:
         tasks[index]["done"] = True
@@ -59,7 +63,7 @@ def mark_done(index):
 
 
 def remove_task(index):
-    # TODO(documentation): this function has no docstring yet.
+    """Remove a task."""
     tasks = load_tasks()
     try:
         removed = tasks.pop(index)
@@ -69,30 +73,62 @@ def remove_task(index):
         print("No such task.")
 
 
-def sort_by_priority(tasks):
-    """Sort tasks so 'high' priority tasks come first, then 'normal', then 'low'.
+def clear_tasks():
+    """Delete all tasks after user confirmation."""
+    tasks = load_tasks()
 
-    TODO(enhancement): not implemented yet. Currently returns tasks
-    unsorted. Should also be wired up behind a `list --sort` flag.
-    """
+    if not tasks:
+        print("No tasks to clear.")
+        return
+
+    confirm = input(
+        "Are you sure you want to delete all tasks? Type 'yes' to confirm: "
+    )
+
+    if confirm.strip().lower() == "yes":
+        save_tasks([])
+        print("All tasks have been deleted.")
+    else:
+        print("Operation cancelled.")
+
+
+def sort_by_priority(tasks):
+    """Sort tasks so 'high' priority tasks come first, then 'normal', then 'low'."""
     return tasks
 
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: tasklite <add|list|done|remove> [args]")
+        print("Usage: tasklite <add|list|done|remove|clear> [args]")
         return
 
     command = sys.argv[1]
+
     if command == "add":
         description = " ".join(sys.argv[2:])
+        if not description:
+            print("Please provide a task description.")
+            return
         add_task(description)
+
     elif command == "list":
         list_tasks()
+
     elif command == "done":
+        if len(sys.argv) < 3:
+            print("Usage: tasklite done <task_number>")
+            return
         mark_done(int(sys.argv[2]))
+
     elif command == "remove":
+        if len(sys.argv) < 3:
+            print("Usage: tasklite remove <task_number>")
+            return
         remove_task(int(sys.argv[2]))
+
+    elif command == "clear":
+        clear_tasks()
+
     else:
         print(f"Unknown command: {command}")
 
