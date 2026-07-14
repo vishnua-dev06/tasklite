@@ -39,9 +39,19 @@ def add_task(description, priority="normal"):
     print(f"Added: {description}")
 
 
-def list_tasks():
+def sort_by_priority(tasks):
+    """Sort tasks so high-priority tasks come first, then normal, then low."""
+    priority_order = {"high": 0, "normal": 1, "low": 2}
+    return sorted(tasks, key=lambda task: priority_order.get(task["priority"], 1))
+
+
+def list_tasks(sort=False):
     """Print all tasks with a status checkbox and a display number."""
     tasks = load_tasks()
+
+    if sort:
+        tasks = sort_by_priority(tasks)
+
     if not tasks:
         print('No tasks yet. Add one with: tasklite add "buy milk"')
         return
@@ -49,6 +59,19 @@ def list_tasks():
     for i, task in enumerate(tasks):
         status = "x" if task["done"] else " "
         print(f"[{status}] {i + 1}. {task['description']}")
+
+
+def mark_done(index):
+    """Mark a task as completed."""
+    tasks = load_tasks()
+
+    if index < 1 or index > len(tasks):
+        print("No such task.")
+        return
+
+    tasks[index - 1]["done"] = True
+    save_tasks(tasks)
+    print(f"Marked task {index} as done.")
 
 
 def remove_task(index):
@@ -62,17 +85,6 @@ def remove_task(index):
     removed = tasks.pop(index - 1)
     save_tasks(tasks)
     print(f"Removed: {removed['description']}")
-
-
-def remove_task(index):
-    """Remove a task."""
-    tasks = load_tasks()
-    try:
-        removed = tasks.pop(index)
-        save_tasks(tasks)
-        print(f"Removed: {removed['description']}")
-    except IndexError:
-        print("No such task.")
 
 
 def clear_tasks():
@@ -94,11 +106,6 @@ def clear_tasks():
         print("Operation cancelled.")
 
 
-def sort_by_priority(tasks):
-    """Sort tasks so 'high' priority tasks come first, then 'normal', then 'low'."""
-    return tasks
-
-
 def main():
     if len(sys.argv) < 2:
         print("Usage: tasklite <add|list|done|remove|clear> [args]")
@@ -114,7 +121,8 @@ def main():
         add_task(description)
 
     elif command == "list":
-        list_tasks()
+        sort = "--sort" in sys.argv
+        list_tasks(sort=sort)
 
     elif command == "done":
         if len(sys.argv) < 3:
